@@ -1,13 +1,19 @@
 import 'dart:io';
-
 import 'package:client/data_model.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:client/data_services.dart';
 import 'package:client/post_detail..dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class PostsPage extends StatelessWidget {
   final HttpService httpService = HttpService();
+
+  final _categoryNameController = TextEditingController();
+  final _categoryDescriptionController = TextEditingController();
+
+  HttpService postService = HttpService();
 
   _showFromDialog(BuildContext context){
     return showDialog(context: context, barrierDismissible: true, builder: (param){
@@ -15,11 +21,28 @@ class PostsPage extends StatelessWidget {
         actions: <Widget>[
 
           FlatButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'), textColor: Colors.blue,
+              onPressed: () {
+                Navigator.pop(context); print('Canceled');
+                },
+              child: const Text('Cancel'), textColor: Colors.grey,
           ),
 
-          FlatButton(onPressed: (){},
+          FlatButton(onPressed: () async {
+            Map<String, dynamic> data = {
+
+              "name" : (Post post) => ListTile(title: Text(post.name),),
+              "description" : (Post post) => ListTile(title: Text(post.id.toString()),)
+            };
+            //make request
+            String res = await postService.createPost(data);
+            //wait for response
+            //show toast
+            res == "Success"?
+            Fluttertoast.showToast(msg: "Post created successfully"):
+            Fluttertoast.showToast(msg: "Error post created");
+            Navigator.of(context).pop();
+            //
+          },
             child: const Text('Save'), textColor: Colors.blue,
           ),
 
@@ -29,16 +52,18 @@ class PostsPage extends StatelessWidget {
         title: const Text('Categories From'),
         content: SingleChildScrollView(
           child: Column(
-            children: const <Widget>[
+            children: <Widget>[
               TextField(
-                decoration: InputDecoration(
+                controller: _categoryDescriptionController,
+                decoration: const InputDecoration(
                   hintText: 'Write a category name',
                   labelText: 'Category'
                 ),
               ),
 
               TextField(
-                decoration: InputDecoration(
+                controller: _categoryNameController,
+                decoration: const InputDecoration(
                   hintText: 'Write a description',
                   labelText: 'Description'
                 ),
@@ -58,7 +83,7 @@ class PostsPage extends StatelessWidget {
       ),
 
       //float actionbar
-      floatingActionButton: FloatingActionButton(child: Icon(Icons.add),
+      floatingActionButton: FloatingActionButton(child: const Icon(Icons.add),
       onPressed: (){
         _showFromDialog(context);
       },
@@ -89,10 +114,14 @@ class PostsPage extends StatelessWidget {
               )
                   .toList(),
             );
+          } else{
+            return const Center(
+              child: Text('Error networking'),
+            );
           }
 
           return const Center(child:
-          CircularProgressIndicator(),
+            CircularProgressIndicator(),
           );
         },
       ),

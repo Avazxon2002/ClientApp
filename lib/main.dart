@@ -1,5 +1,5 @@
 import 'package:client/data_services.dart';
-import 'package:client/posts.dart';
+import 'package:client/posts_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
